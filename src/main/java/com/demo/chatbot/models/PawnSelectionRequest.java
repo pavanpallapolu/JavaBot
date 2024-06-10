@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 public class PawnSelectionRequest {
     private String gameId;
-    private List<Pawn> availablePawns;
+    private List<Integer> availablePawns;
     private List<Integer> board;
     private List<Move> moves;
 

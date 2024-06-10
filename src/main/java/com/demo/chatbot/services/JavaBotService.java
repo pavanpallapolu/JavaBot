@@ -1,12 +1,7 @@
 package com.demo.chatbot.services;
 
 
-import com.demo.chatbot.enums.Pawn;
-import com.demo.chatbot.enums.Position;
-import com.demo.chatbot.models.BoardSummary;
-import com.demo.chatbot.models.PairIntInt;
-import com.demo.chatbot.models.PawnPlacementRequest;
-import com.demo.chatbot.models.PawnSelectionRequest;
+import com.demo.chatbot.models.*;
 import lombok.Data;
 import org.springframework.stereotype.Service;
 
@@ -40,10 +35,45 @@ public class JavaBotService {
             BoardSummary curBoardSummary=inspectBoard();
             if(curBoardSummary.getNumberOfWins()>0) return position;
             goodPositions.add(new PairIntInt(curBoardSummary.getNumberOfTriples()-preBoardSummary.getNumberOfTriples(),position));
+            board[position/4][position%4]=-1;
         }
         return goodPositions.first().getSecond();
     }
 
+    public Integer selectPawn(PawnSelectionRequest pawnSelectionRequest){
+        board = new int[4][4];
+        for (int i = 0; i < 4; i++){
+            for(int j=0;j<4;j++){
+                board[i][j]=-1;
+            }
+        }
+        List<Integer> boardPositions= pawnSelectionRequest.getBoard();
+        for(int i=0;i<boardPositions.size();i+=2){
+            int piece=boardPositions.get(i);
+            int position=boardPositions.get(i+1);
+            board[position/4][position%4]=piece;
+        }
+        TreeSet<TupleDbDbInt>positionMetrics=new TreeSet<>();
+        for(int pawn:pawnSelectionRequest.getAvailablePawns()){
+            double opponentWinProbability=0,tripleProbability=0;
+            BoardSummary preBoardSummary=inspectBoard();
+            int emptyCells=0;
+            for(int i=0;i<4;i++){
+                for(int j=0;j<4;j++) emptyCells+=(board[i][j]==-1?1:0);
+            }
+            for(int i=0;i<4;i++){
+                for(int j=0;j<4;j++){
+                    if(board[i][j]!=-1) continue;
+                    board[i][j]=pawn;
+                    BoardSummary curBoardSummary=inspectBoard();
+                    opponentWinProbability+=1.0*(curBoardSummary.getNumberOfWins()-preBoardSummary.getNumberOfWins())/emptyCells;
+                    tripleProbability+=1.0*(curBoardSummary.getNumberOfWins()-preBoardSummary.getNumberOfWins())/emptyCells;
+                }
+            }
+            positionMetrics.add(new TupleDbDbInt(opponentWinProbability,tripleProbability,pawn));
+        }
+        return positionMetrics.getFirst().getThird();
+    }
 
 
     private BoardSummary inspectBoard(){
@@ -117,13 +147,4 @@ public class JavaBotService {
         return boardSummary;
     }
 
-
-    public Integer selectPawn(PawnSelectionRequest pawnSelectionRequest){
-        board = new int[4][4];
-        for (int i = 0; i < 4; i++){
-            for(int j=0;j<4;j++){
-                board[i][j]=-1;
-            }
-        }
-    }
 }
