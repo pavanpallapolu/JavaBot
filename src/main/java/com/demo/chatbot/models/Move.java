@@ -7,14 +7,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Data
 public class Move {
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class SelectionMove {
-//        private Player selectingPlayer;
-        private Pawn selectedPawn;
+        private Integer selectingPlayer;
+        private Integer selectedPawn;
         private Long selectionTimeMs;
     }
 
@@ -23,7 +24,7 @@ public class Move {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class PlacementMove {
-//        private Player placingPlayer;
+        private Integer placingPlayer;
         private Position position;
         private Long placingTimeMs;
     }
